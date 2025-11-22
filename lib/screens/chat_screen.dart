@@ -2,7 +2,7 @@ import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Added for formatting time inside bubble
+import 'package:intl/intl.dart';
 
 class ChatScreen extends StatefulWidget {
   final String receiverId;
@@ -24,7 +24,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _msgController = TextEditingController();
   final ChatService _chatService = ChatService();
   final AuthService _authService = AuthService();
-
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -36,7 +35,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void sendMessage() async {
     if (_msgController.text.trim().isEmpty) return;
-
     String msg = _msgController.text;
     _msgController.clear();
 
@@ -45,7 +43,6 @@ class _ChatScreenState extends State<ChatScreen> {
       msg,
       {'username': widget.receiverName, 'email': widget.receiverEmail},
     );
-
     _scrollToBottom();
   }
 
@@ -95,7 +92,6 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-          // 1. Message List
           Expanded(
             child: StreamBuilder(
               stream: _chatService.getMessages(
@@ -103,9 +99,8 @@ class _ChatScreenState extends State<ChatScreen> {
               builder: (context, snapshot) {
                 if (snapshot.hasError)
                   return const Center(child: Text("Error"));
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                if (snapshot.connectionState == ConnectionState.waiting)
                   return const Center(child: CircularProgressIndicator());
-                }
 
                 var docs = snapshot.data!.docs;
 
@@ -120,8 +115,6 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-
-          // 2. Input Area
           _buildInputArea(),
         ],
       ),
@@ -132,7 +125,6 @@ class _ChatScreenState extends State<ChatScreen> {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     bool isMe = data['senderId'] == _authService.currentUser!.uid;
 
-    // Format Timestamp
     Timestamp? timestamp = data['timestamp'];
     String timeText = "";
     if (timestamp != null) {
@@ -170,17 +162,14 @@ class _ChatScreenState extends State<ChatScreen> {
             Text(
               data['text'],
               style: TextStyle(
-                color: isMe ? Colors.white : Colors.black87,
-                fontSize: 15,
-              ),
+                  color: isMe ? Colors.white : Colors.black87, fontSize: 15),
             ),
             const SizedBox(height: 4),
             Text(
               timeText,
               style: TextStyle(
-                color: isMe ? Colors.white70 : Colors.grey[500],
-                fontSize: 10,
-              ),
+                  color: isMe ? Colors.white70 : Colors.grey[500],
+                  fontSize: 10),
             ),
           ],
         ),
@@ -218,9 +207,7 @@ class _ChatScreenState extends State<ChatScreen> {
             const SizedBox(width: 8),
             Container(
               decoration: const BoxDecoration(
-                color: Color(0xFF4F46E5),
-                shape: BoxShape.circle,
-              ),
+                  color: Color(0xFF4F46E5), shape: BoxShape.circle),
               child: IconButton(
                 icon: const Icon(Icons.send_rounded,
                     color: Colors.white, size: 20),

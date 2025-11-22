@@ -22,17 +22,23 @@ class AuthService {
     }
   }
 
-  // Sign Up with Email & Save User Data
+  // Sign Up with Email
   Future<UserCredential> signUpWithEmail(
       String email, String password, String username) async {
     try {
+      // 1. Create Auth Account
       UserCredential cred = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password.trim(),
       );
 
-      // Save user info to Firestore
-      await _saveUserToFirestore(cred.user!, username);
+      // 2. Save User Data to Firestore (Crucial for Search)
+      await _firestore.collection('users').doc(cred.user!.uid).set({
+        'uid': cred.user!.uid,
+        'email': email.trim(),
+        'username': username.trim(),
+        'createdAt': Timestamp.now(),
+      });
 
       return cred;
     } on FirebaseAuthException catch (e) {
@@ -44,7 +50,7 @@ class AuthService {
   Future<UserCredential?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null; // User canceled
+      if (googleUser == null) return null;
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
@@ -55,36 +61,28 @@ class AuthService {
 
       UserCredential cred = await _auth.signInWithCredential(credential);
 
-      // Check if user exists, if not, save them
+      // Save user if new
       final userDoc =
           await _firestore.collection('users').doc(cred.user!.uid).get();
       if (!userDoc.exists) {
-        await _saveUserToFirestore(
-            cred.user!, cred.user!.displayName ?? 'User');
+        await _firestore.collection('users').doc(cred.user!.uid).set({
+          'uid': cred.user!.uid,
+          'email': cred.user!.email,
+          'username': cred.user!.displayName ?? 'Unknown',
+          'createdAt': Timestamp.now(),
+        });
       }
       return cred;
     } catch (e) {
-      throw Exception('Google Sign-In failed: $e');
+      throw Exception('Google Sign-In failed. Check console.');
     }
   }
 
-  // Sign Out
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
   }
 
-  // Helper: Save User Data
-  Future<void> _saveUserToFirestore(User user, String username) async {
-    await _firestore.collection('users').doc(user.uid).set({
-      'uid': user.uid,
-      'email': user.email,
-      'username': username,
-      'createdAt': Timestamp.now(),
-    });
-  }
-
-  // Helper: Error Messages
   String _handleAuthErrors(String code) {
     switch (code) {
       case 'user-not-found':
@@ -92,13 +90,13 @@ class AuthService {
       case 'wrong-password':
         return 'Incorrect password.';
       case 'email-already-in-use':
-        return 'This email is already registered.';
+        return 'This email is already in use.';
       case 'invalid-email':
         return 'Invalid email address.';
       case 'weak-password':
         return 'Password is too weak.';
       default:
-        return 'An authentication error occurred.';
+        return 'An error occurred. Please try again.';
     }
   }
 }

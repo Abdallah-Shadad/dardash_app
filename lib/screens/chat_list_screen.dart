@@ -56,8 +56,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
     );
   }
 
-  // --- UI Components ---
-
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -73,16 +71,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
           prefixIcon: const Icon(Icons.search),
           filled: true,
           fillColor: Colors.white,
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none,
-          ),
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none),
         ),
       ),
     );
@@ -92,19 +83,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
     return StreamBuilder<QuerySnapshot>(
       stream: _chatService.getUserChatRooms(),
       builder: (context, snapshot) {
-        // Error State
-        if (snapshot.hasError) {
-          return const Center(child: Text("Unable to load chats."));
-        }
-        // Loading State
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.hasError)
+          return const Center(child: Text("Something went wrong."));
+        if (snapshot.connectionState == ConnectionState.waiting)
           return const Center(child: CircularProgressIndicator());
-        }
-
-        // Empty State
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
           return _buildEmptyState("No active chats. Search for a friend!");
-        }
 
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -114,12 +98,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
             var roomData =
                 snapshot.data!.docs[index].data() as Map<String, dynamic>;
             String currentUid = _authService.currentUser!.uid;
-
-            // Identify the other participant
             String otherUid = (roomData['participants'] as List)
                 .firstWhere((id) => id != currentUid);
 
-            // Retrieve cached user info
             Map<String, dynamic>? userInfo = roomData['usersInfo']?[otherUid];
             String username = userInfo?['username'] ?? 'Unknown User';
             String email = userInfo?['email'] ?? '';
@@ -127,8 +108,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
             Timestamp? time = roomData['lastMessageTime'];
 
             return ListTile(
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
               leading: CircleAvatar(
                 radius: 26,
                 backgroundColor: Theme.of(context).colorScheme.primary,
@@ -141,19 +120,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 ),
               ),
               title: Text(username,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 16)),
-              subtitle: Text(
-                lastMsg,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle:
+                  Text(lastMsg, maxLines: 1, overflow: TextOverflow.ellipsis),
               trailing: time != null
-                  ? Text(
-                      _formatTime(time),
-                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
-                    )
+                  ? Text(_formatTime(time),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12))
                   : null,
               onTap: () => _openChat(otherUid, username, email),
             );
@@ -175,9 +147,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           String username = data['username'].toString().toLowerCase();
           String email = data['email'].toString().toLowerCase();
           String query = _searchController.text.toLowerCase();
-
           if (doc.id == _authService.currentUser?.uid) return false;
-
           return username.contains(query) || email.contains(query);
         }).toList();
 
@@ -189,9 +159,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
             var userData = users[index].data() as Map<String, dynamic>;
             return ListTile(
               leading: CircleAvatar(
-                backgroundColor: Colors.grey[300],
-                child: const Icon(Icons.person, color: Colors.white),
-              ),
+                  backgroundColor: Colors.grey[300],
+                  child: const Icon(Icons.person, color: Colors.white)),
               title: Text(userData['username']),
               subtitle: Text(userData['email']),
               trailing:
@@ -220,15 +189,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   void _openChat(String id, String name, String email) {
     Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChatScreen(
-          receiverId: id,
-          receiverName: name,
-          receiverEmail: email,
-        ),
-      ),
-    );
+        context,
+        MaterialPageRoute(
+            builder: (context) => ChatScreen(
+                receiverId: id, receiverName: name, receiverEmail: email)));
   }
 
   String _formatTime(Timestamp timestamp) {
