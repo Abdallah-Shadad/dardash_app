@@ -12,12 +12,25 @@ class ChatService {
     return ids.join("_");
   }
 
+  // دالة مساعدة لجلب بيانات المستخدم الحالي (الاسم والإيميل)
+  Future<Map<String, dynamic>?> getCurrentUserData() async {
+    String uid = _auth.currentUser!.uid;
+    DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
+    return doc.data() as Map<String, dynamic>?;
+  }
+
   // Send Message & Update Room Metadata
   Future<void> sendMessage(
       String receiverId, String text, Map<String, dynamic> receiverData) async {
     final String currentUserId = _auth.currentUser!.uid;
     final String currentEmail = _auth.currentUser!.email!;
     final Timestamp timestamp = Timestamp.now();
+
+    // 1. جلب بياناتي (المرسل) من قاعدة البيانات للتأكد من الاسم
+    Map<String, dynamic>? myData = await getCurrentUserData();
+    String myName = myData?['username'] ??
+        currentEmail
+            .split('@')[0]; // لو الاسم مش موجود استخدم الجزء الأول من الإيميل
 
     String chatRoomId = getChatRoomId(currentUserId, receiverId);
 
@@ -31,7 +44,7 @@ class ChatService {
 
     WriteBatch batch = _firestore.batch();
 
-    // 1. Add Message
+    // 2. Add Message
     DocumentReference messageRef = _firestore
         .collection('chat_rooms')
         .doc(chatRoomId)
@@ -40,7 +53,7 @@ class ChatService {
 
     batch.set(messageRef, messageData);
 
-    // 2. Update Room Info (For the Chat List)
+    // 3. Update Room Info (تحديث بيانات الطرفين لضمان ظهور الأسماء)
     DocumentReference roomRef =
         _firestore.collection('chat_rooms').doc(chatRoomId);
 
@@ -49,7 +62,9 @@ class ChatService {
       'lastMessage': text,
       'lastMessageTime': timestamp,
       'usersInfo': {
-        currentUserId: {'email': currentEmail},
+        // بياناتي أنا (المرسل) -> عشان تظهر عنده
+        currentUserId: {'email': currentEmail, 'username': myName},
+        // بياناته هو (المستقبل) -> بحفظها زي ما هي عشان تظهر عندي
         receiverId: {
           'email': receiverData['email'],
           'username': receiverData['username']
