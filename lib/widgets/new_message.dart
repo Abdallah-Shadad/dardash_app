@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Bottom input area used to type and send new messages.
 class NewMessage extends StatefulWidget {
   final void Function(String message) onSendMessage;
 
@@ -49,7 +50,7 @@ class _NewMessageState extends State<NewMessage> {
                 onChanged: (value) => setState(() => _enteredMessage = value),
                 textCapitalization: TextCapitalization.sentences,
                 decoration: const InputDecoration(
-                  hintText: "Type a message...",
+                  hintText: 'Type a message...',
                   border: InputBorder.none,
                 ),
               ),

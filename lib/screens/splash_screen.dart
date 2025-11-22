@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:chat_app/main.dart';
 
+/// Simple splash screen that shows the app name and logo,
+/// then navigates to AuthWrapper.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -13,6 +15,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Navigate to AuthWrapper after 2 seconds.
     Timer(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(

@@ -1,5 +1,5 @@
 name: chat_app
-description: A simple and secure instant messaging application.
+description: A simple and modern chat application (Dardash).
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -10,39 +10,31 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
-  # Firebase Core and Authentication
-  firebase_core: ^3.6.0
-  firebase_auth: ^5.3.4
-  cloud_firestore: ^5.4.4
 
+  # Firebase
+  # قمت باختيار الإصدارات الأحدث الموجودة في ملفك
+  firebase_core: ^3.15.2
+  firebase_auth: ^5.7.0
+  cloud_firestore: ^5.6.12
   
-  # Google Sign-In integration
-  google_sign_in: ^6.1.6
+  # Google Sign-In
+  google_sign_in: ^6.3.0
 
-  # Additional utility icons
+  # Utilities
+  intl: ^0.19.0
+  rxdart: ^0.27.7
+
+  # Icons
   cupertino_icons: ^1.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-  
-  # Generate custom app icons
-  flutter_launcher_icons: ^0.13.1
-
-# Configuration for flutter_launcher_icons
-# Generate icons after placing app_icon.png inside assets/
-flutter_launcher_icons:
-  android: "launcher_icon"
-  ios: true
-  image_path: "assets/app_icon.png"
-  min_sdk_android: 21
-  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/
+    - assets/google_logo.png
     - assets/app_icon.png

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Single chat bubble widget.
 class MessageBubble extends StatelessWidget {
   final String message;
   final bool isMe;
@@ -12,8 +13,6 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
